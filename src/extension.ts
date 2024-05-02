@@ -409,6 +409,30 @@ export async function activate(context: vscode.ExtensionContext) {
 			mpremote.upload(port, localPath, remotePath);
 		}
 	}));
+	/*
+	 *  Upload a local file into the microcontroller's current working dir and start the REPL.
+	 */
+	context.subscriptions.push(vscode.commands.registerCommand('mpremote.uploadRepl', async (args) => {
+		let localPath: string = getLocalFilePath(args);
+		console.debug('Local file:', localPath);
+
+		if (localPath) {
+			let port = await getDevicePort(serialPortDataProvider.getPortNames());
+			console.debug('Local file:', localPath);
+			let localRoot: string = getLocalRoot();
+			let cwd: string = remoteWorkingDir.get(port) || remoteWorkingDir.get('default');
+			let remotePath: string = "";
+			if (localRoot) {
+				remotePath = pathJoin(cwd, localPath.replace(localRoot, "").replace(/\\/g, "/"));
+			}
+			else {
+				remotePath = pathJoin(cwd, pathBasename(localPath));
+			}
+			console.debug('Remote file:', remotePath);
+			mpremote.uploadRepl(port, localPath, remotePath);
+		}
+	}));
+
 }
 
 

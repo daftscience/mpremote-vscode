@@ -148,4 +148,14 @@ export class MPRemote {
             this.terminal.sendText(`${this.mpremote} connect ${port} cp '${localPath}' ':${remotePath}'`);
         }
     }
+
+    uploadRepl(port: string, localPath: string, remotePath: string) {
+        if (port && localPath && remotePath) {
+            // send ctrl+x to to the terminal 
+            this.terminal.sendText(`${String.fromCharCode(29)}`); // send command to exit repl
+            this.terminal.sendText(`${this.mpremote} connect ${port} cp '${localPath}' ':${remotePath}'`);
+            this.repl(port);
+            this.terminal.sendText(`\u0004`); // send command to soft reboot. 
+        }
+    }
 }

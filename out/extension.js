@@ -390,6 +390,28 @@ async function activate(context) {
             mpremote.upload(port, localPath, remotePath);
         }
     }));
+    /*
+     *  Upload a local file into the microcontroller's current working dir and start the REPL.
+     */
+    context.subscriptions.push(vscode.commands.registerCommand('mpremote.uploadRepl', async (args) => {
+        let localPath = (0, utility_1.getLocalFilePath)(args);
+        console.debug('Local file:', localPath);
+        if (localPath) {
+            let port = await (0, utility_1.getDevicePort)(serialPortDataProvider.getPortNames());
+            console.debug('Local file:', localPath);
+            let localRoot = (0, utility_1.getLocalRoot)();
+            let cwd = remoteWorkingDir.get(port) || remoteWorkingDir.get('default');
+            let remotePath = "";
+            if (localRoot) {
+                remotePath = (0, path_1.join)(cwd, localPath.replace(localRoot, "").replace(/\\/g, "/"));
+            }
+            else {
+                remotePath = (0, path_1.join)(cwd, (0, path_1.basename)(localPath));
+            }
+            console.debug('Remote file:', remotePath);
+            mpremote.uploadRepl(port, localPath, remotePath);
+        }
+    }));
 }
 exports.activate = activate;
 // This method is called when your extension is deactivated
