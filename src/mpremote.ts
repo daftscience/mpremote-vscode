@@ -6,6 +6,7 @@ import { getMPRemoteName, SYNC_IGNORE } from './utility';
 export class MPRemote {
     terminal;
     mpremote = getMPRemoteName();
+    terminalRunning = false;
 
     constructor() {
         // Avoid creating multiple mpremote terminals when session restored.
@@ -15,11 +16,14 @@ export class MPRemote {
         if (existingTerminal) {
             console.debug('Reusing existing mpremote terminal.');
             this.terminal = existingTerminal;
+            this.terminal.show(true);
+            this.terminalRunning = true;
         }
         else {
             console.debug('Creating new mpremote terminal.');
             this.terminal = vscode.window.createTerminal('mpremote');
-            this.terminal.show(false);  // false here lets the mpremote terminal take focus on startup
+            this.terminal.show(true);
+            this.terminalRunning = true;
         }
 
         if (vscode.workspace.getConfiguration('mpremote').startupCheck.skip === false) {
@@ -151,11 +155,25 @@ export class MPRemote {
 
     uploadRepl(port: string, localPath: string, remotePath: string) {
         if (port && localPath && remotePath) {
-            // send ctrl+x to to the terminal 
-            this.terminal.sendText(`${String.fromCharCode(29)}`); // send command to exit repl
-            this.terminal.sendText(`${this.mpremote} connect ${port} cp '${localPath}' ':${remotePath}'`);
-            this.repl(port);
-            this.terminal.sendText(`\u0004`); // send command to soft reboot. 
+            this.closeRunningTerminal().then(() => {
+                this.createTerminal().then(() => {
+                    this.terminal.sendText(`${this.mpremote} connect ${port} cp '${localPath}' ':${remotePath}'`);
+                    this.repl(port);
+                    this.terminal.sendText('\x04', false);
+                });
+            });
         }
+    }
+    async closeRunningTerminal() {
+        vscode.window.terminals.forEach(terminal => {
+            if (terminal.name === 'mpremote') {
+                terminal.dispose();
+            }
+        });
+    }
+    async createTerminal() {
+        // create a new terminal window
+        this.terminal = vscode.window.createTerminal('mpremote');;
+        this.terminal.show();
     }
 }

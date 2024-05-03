@@ -409,6 +409,7 @@ async function activate(context) {
                 remotePath = (0, path_1.join)(cwd, (0, path_1.basename)(localPath));
             }
             console.debug('Remote file:', remotePath);
+            // mpremote.createTerminal(port, localPath, remotePath);
             mpremote.uploadRepl(port, localPath, remotePath);
         }
     }));

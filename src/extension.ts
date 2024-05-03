@@ -429,6 +429,11 @@ export async function activate(context: vscode.ExtensionContext) {
 				remotePath = pathJoin(cwd, pathBasename(localPath));
 			}
 			console.debug('Remote file:', remotePath);
+
+
+			// mpremote.createTerminal(port, localPath, remotePath);
+
+
 			mpremote.uploadRepl(port, localPath, remotePath);
 		}
 	}));
